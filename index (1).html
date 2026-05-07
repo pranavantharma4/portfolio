@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pranavan Tharmapalu</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Figtree:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060608;
+  --bg2:#0d0d12;
+  --surface:#12121a;
+  --surface2:#1a1a24;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --text:#f4f2ee;
+  --muted:rgba(244,242,238,0.38);
+  --muted2:rgba(244,242,238,0.55);
+  --accent:#e8dcc8;
+  --gold:#d4a853;
+  --gold-dim:rgba(212,168,83,0.15);
+  --gold-glow:rgba(212,168,83,0.08);
+  --blue:#4a9eff;
+  --blue-dim:rgba(74,158,255,0.08);
+}
+
+html{scroll-behavior:smooth;cursor:none}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Figtree',sans-serif;
+  font-size:15px;
+  line-height:1.6;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* CUSTOM CURSOR */
+.cursor{
+  position:fixed;width:8px;height:8px;
+  background:var(--gold);border-radius:50%;
+  pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);
+  transition:transform 0.08s,background 0.2s,width 0.2s,height 0.2s;
+  mix-blend-mode:screen;
+}
+.cursor-ring{
+  position:fixed;width:36px;height:36px;
+  border:1px solid rgba(212,168,83,0.4);border-radius:50%;
+  pointer-events:none;z-index:9998;
+  transform:translate(-50%,-50%);
+  transition:transform 0.18s cubic-bezier(0.25,0.46,0.45,0.94),width 0.3s,height 0.3s,border-color 0.3s;
+}
+body:has(a:hover) .cursor,.cursor.hovering{width:14px;height:14px;background:#fff}
+body:has(a:hover) .cursor-ring,.cursor-ring.hovering{width:60px;height:60px;border-color:rgba(212,168,83,0.7)}
+
+/* CANVAS BG */
+#bg-canvas{
+  position:fixed;inset:0;z-index:0;
+  pointer-events:none;opacity:0.6;
+}
+
+/* NOISE */
+.noise{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  opacity:0.35;
+}
+
+/* LOADING SCREEN */
+#loader{
+  position:fixed;inset:0;background:var(--bg);
+  z-index:1000;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:24px;
+  transition:opacity 0.8s ease, visibility 0.8s;
+}
+#loader.gone{opacity:0;visibility:hidden;pointer-events:none}
+.loader-name{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(28px,4vw,52px);
+  font-style:italic;
+  color:var(--text);
+  opacity:0;
+  animation:loaderFade 0.8s ease 0.3s forwards;
+}
+.loader-bar-track{width:200px;height:1px;background:var(--border2)}
+.loader-bar{
+  height:1px;background:var(--gold);width:0%;
+  animation:loaderBar 1.4s cubic-bezier(0.4,0,0.2,1) 0.2s forwards;
+}
+.loader-pct{
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--muted);letter-spacing:0.1em;
+  opacity:0;animation:loaderFade 0.6s ease 0.4s forwards;
+}
+@keyframes loaderFade{to{opacity:1}}
+@keyframes loaderBar{0%{width:0}60%{width:72%}85%{width:88%}100%{width:100%}}
+
+/* MAIN */
+main{position:relative;z-index:2}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  padding:0 clamp(24px,5vw,80px);
+  display:flex;align-items:center;justify-content:space-between;
+  height:64px;
+  border-bottom:1px solid transparent;
+  transition:border-color 0.4s,background 0.4s,backdrop-filter 0.4s;
+}
+nav.scrolled{
+  border-color:var(--border);
+  background:rgba(6,6,8,0.8);
+  backdrop-filter:blur(20px);
+}
+.nav-logo{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;letter-spacing:0.2em;
+  color:var(--muted);text-transform:uppercase;
+}
+.nav-logo span{color:var(--gold)}
+.nav-links{display:flex;gap:36px;align-items:center}
+.nav-link{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:0.15em;text-transform:uppercase;
+  color:var(--muted);text-decoration:none;
+  transition:color 0.2s;position:relative;
+  border:none;background:none;cursor:none;
+}
+.nav-link::after{
+  content:'';position:absolute;bottom:-2px;left:0;right:0;
+  height:1px;background:var(--gold);transform:scaleX(0);
+  transform-origin:left;transition:transform 0.3s;
+}
+.nav-link:hover{color:var(--accent)}
+.nav-link:hover::after{transform:scaleX(1)}
+.nav-cta{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--gold);border:1px solid rgba(212,168,83,0.35);
+  padding:8px 18px;border-radius:2px;cursor:none;
+  background:none;text-decoration:none;
+  transition:background 0.2s,border-color 0.2s;
+}
+.nav-cta:hover{background:var(--gold-dim);border-color:var(--gold)}
+
+/* HERO */
+.hero{
+  min-height:100vh;display:flex;align-items:center;
+  padding:64px clamp(24px,8vw,140px) 0;
+  position:relative;overflow:hidden;
+}
+.hero-inner{max-width:900px;width:100%}
+
+.hero-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:36px;
+  display:flex;align-items:center;gap:12px;
+  opacity:0;animation:slideUp 0.7s ease 1.6s forwards;
+}
+.hero-tag::before{content:'';width:32px;height:1px;background:var(--gold)}
+
+.hero-headline{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(52px,7.5vw,110px);
+  font-weight:700;line-height:0.96;
+  letter-spacing:-0.03em;
+  color:var(--text);
+  margin-bottom:40px;
+}
+.hero-headline .line{
+  display:block;overflow:hidden;
+}
+.hero-headline .word{
+  display:inline-block;
+  opacity:0;transform:translateY(100%);
+  animation:wordReveal 0.8s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.hero-headline .line:nth-child(1) .word{animation-delay:1.7s}
+.hero-headline .line:nth-child(2) .word{animation-delay:1.85s}
+.hero-headline .line:nth-child(3) .word{animation-delay:2.0s}
+.hero-headline em{
+  font-style:italic;
+  background:linear-gradient(135deg,var(--gold) 0%,#f0c878 50%,var(--gold) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+@keyframes wordReveal{to{opacity:1;transform:translateY(0)}}
+
+.hero-sub{
+  font-size:clamp(15px,1.4vw,17px);
+  color:var(--muted2);
+  max-width:520px;
+  line-height:1.75;
+  margin-bottom:56px;
+  opacity:0;animation:slideUp 0.7s ease 2.3s forwards;
+}
+.hero-sub strong{color:var(--accent);font-weight:500}
+
+.hero-actions{
+  display:flex;gap:16px;flex-wrap:wrap;
+  opacity:0;animation:slideUp 0.7s ease 2.5s forwards;
+}
+.btn-primary{
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  letter-spacing:0.14em;text-transform:uppercase;
+  background:var(--gold);color:#0a0a0a;
+  padding:14px 32px;border:none;border-radius:2px;
+  cursor:none;text-decoration:none;font-weight:500;
+  transition:transform 0.2s,box-shadow 0.2s;
+  display:inline-flex;align-items:center;gap:10px;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(212,168,83,0.3)}
+.btn-ghost{
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--muted2);border:1px solid var(--border2);
+  padding:14px 32px;border-radius:2px;
+  cursor:none;text-decoration:none;
+  transition:color 0.2s,border-color 0.2s;
+}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2)}
+
+.hero-scroll{
+  position:absolute;bottom:40px;left:clamp(24px,8vw,140px);
+  display:flex;align-items:center;gap:12px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);
+  opacity:0;animation:slideUp 0.7s ease 2.8s forwards;
+}
+.scroll-line{
+  width:48px;height:1px;background:var(--border2);
+  position:relative;overflow:hidden;
+}
+.scroll-line::after{
+  content:'';position:absolute;inset:0;background:var(--gold);
+  animation:scrollLine 2s ease-in-out 3s infinite;
+  transform:translateX(-100%);
+}
+@keyframes scrollLine{0%{transform:translateX(-100%)}50%{transform:translateX(0)}100%{transform:translateX(100%)}}
+
+/* SECTION BASE */
+section{
+  padding:clamp(80px,10vw,140px) clamp(24px,8vw,140px);
+  position:relative;
+}
+.section-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:0.25em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:20px;
+  display:flex;align-items:center;gap:12px;
+}
+.section-label::before{content:'';width:24px;height:1px;background:var(--gold)}
+.section-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(36px,4.5vw,62px);
+  font-weight:700;line-height:1.05;
+  letter-spacing:-0.025em;
+  margin-bottom:64px;
+  color:var(--text);
+}
+.section-title em{font-style:italic;color:var(--gold)}
+
+/* VIDEO SECTION */
+.video-section{
+  padding-top:0;
+}
+.video-wrap{
+  position:relative;
+  max-width:900px;
+  border:1px solid var(--border);
+  border-radius:4px;overflow:hidden;
+  background:var(--surface);
+}
+.video-overlay{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:20px;
+  background:rgba(6,6,8,0.6);cursor:none;
+  transition:background 0.3s;
+  z-index:2;
+}
+.video-overlay:hover{background:rgba(6,6,8,0.3)}
+.play-btn{
+  width:72px;height:72px;border-radius:50%;
+  border:1.5px solid var(--gold);
+  background:rgba(212,168,83,0.1);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform 0.3s,background 0.3s;
+  backdrop-filter:blur(8px);
+}
+.video-overlay:hover .play-btn{transform:scale(1.08);background:rgba(212,168,83,0.2)}
+.play-btn svg{width:22px;height:22px;fill:var(--gold);margin-left:4px}
+.video-label{
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  letter-spacing:0.1em;color:var(--muted2);
+}
+.video-frame{width:100%;aspect-ratio:16/9;display:block;border:none}
+.video-meta{
+  padding:16px 24px;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+}
+.video-meta-label{
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--muted);letter-spacing:0.05em;
+}
+.video-meta-tag{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:0.1em;color:var(--gold);
+  border:1px solid rgba(212,168,83,0.25);
+  padding:4px 10px;border-radius:2px;
+}
+
+/* PROJECTS */
+.projects-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  border-radius:4px;overflow:hidden;
+}
+.proj-card{
+  background:var(--bg);padding:40px;
+  cursor:none;transition:background 0.3s;
+  position:relative;overflow:hidden;
+}
+.proj-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),var(--gold-glow) 0%,transparent 65%);
+  opacity:0;transition:opacity 0.4s;
+}
+.proj-card:hover{background:var(--surface)}
+.proj-card:hover::before{opacity:1}
+.proj-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;letter-spacing:0.1em;color:var(--muted);
+  margin-bottom:28px;
+}
+.proj-name{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(20px,2vw,26px);font-weight:700;
+  color:var(--text);margin-bottom:12px;line-height:1.2;
+}
+.proj-desc{
+  font-size:13px;color:var(--muted);line-height:1.75;
+  margin-bottom:28px;
+}
+.proj-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:32px}
+.proj-tag{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:0.06em;color:var(--muted2);
+  border:1px solid var(--border);
+  padding:4px 10px;border-radius:2px;
+  transition:border-color 0.2s,color 0.2s;
+}
+.proj-card:hover .proj-tag{border-color:rgba(212,168,83,0.2);color:var(--gold)}
+.proj-arrow{
+  font-size:18px;color:var(--gold);
+  opacity:0;transform:translate(-6px,6px);
+  transition:all 0.3s;
+  position:absolute;bottom:40px;right:40px;
+}
+.proj-card:hover .proj-arrow{opacity:1;transform:translate(0,0)}
+
+/* ACADEMIC */
+.acad-grid{display:grid;grid-template-columns:200px 1fr;gap:48px;align-items:start}
+.acad-filters{display:flex;flex-direction:column;gap:4px;position:sticky;top:96px}
+.acad-filter{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--muted);background:none;border:none;
+  padding:10px 14px;cursor:none;text-align:left;
+  border-radius:2px;transition:all 0.2s;border-left:2px solid transparent;
+}
+.acad-filter:hover{color:var(--accent);background:var(--surface)}
+.acad-filter.active{color:var(--gold);border-left-color:var(--gold);background:var(--gold-glow)}
+
+.acad-list{display:flex;flex-direction:column;gap:0}
+.acad-item{
+  display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:24px;
+  padding:24px 0;border-bottom:1px solid var(--border);
+  cursor:none;transition:all 0.25s;
+}
+.acad-item:last-child{border-bottom:none}
+.acad-item:hover{padding-left:8px}
+.acad-idx{
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:28px;color:var(--border2);line-height:1;
+  transition:color 0.25s;
+}
+.acad-item:hover .acad-idx{color:var(--gold)}
+.acad-name{font-size:14px;color:var(--accent);font-weight:500;margin-bottom:4px;transition:color 0.2s}
+.acad-item:hover .acad-name{color:var(--text)}
+.acad-sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.06em;color:var(--muted)}
+.acad-icon{
+  width:32px;height:32px;border:1px solid var(--border);
+  border-radius:2px;display:flex;align-items:center;justify-content:center;
+  transition:border-color 0.2s,background 0.2s;flex-shrink:0;
+}
+.acad-item:hover .acad-icon{border-color:rgba(212,168,83,0.3);background:var(--gold-glow)}
+.acad-icon svg{width:14px;height:14px;stroke:var(--muted);transition:stroke 0.2s}
+.acad-item:hover .acad-icon svg{stroke:var(--gold)}
+
+/* CONTACT */
+.contact-layout{
+  display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;
+}
+.contact-copy h3{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(24px,3vw,38px);
+  line-height:1.15;font-style:italic;
+  color:var(--text);margin-bottom:20px;
+}
+.contact-copy p{
+  font-size:14px;color:var(--muted);line-height:1.8;
+  margin-bottom:32px;
+}
+.contact-avail{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:0.12em;text-transform:uppercase;color:var(--muted2);
+}
+.avail-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;flex-shrink:0;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+.contact-links{display:flex;flex-direction:column;gap:0}
+.contact-link{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 0;border-bottom:1px solid var(--border);
+  text-decoration:none;cursor:none;transition:all 0.25s;
+  position:relative;overflow:hidden;
+}
+.contact-link::before{
+  content:'';position:absolute;left:0;top:50%;height:1px;
+  background:var(--gold);width:0;transform:translateY(-50%);
+  transition:width 0.3s;
+}
+.contact-link:hover{padding-left:16px}
+.contact-link:hover::before{width:8px}
+.c-label{
+  display:flex;align-items:center;gap:14px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);
+}
+.c-icon{width:18px;height:18px;flex-shrink:0}
+.c-val{font-size:13px;color:var(--muted2);transition:color 0.2s}
+.contact-link:hover .c-val{color:var(--gold)}
+
+/* MODAL */
+.modal-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(6,6,8,0.94);
+  backdrop-filter:blur(20px);
+  display:none;align-items:center;justify-content:center;
+  padding:40px;cursor:none;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:4px;
+  width:100%;max-width:760px;
+  max-height:88vh;overflow-y:auto;
+  position:relative;
+  animation:modalIn 0.35s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(0.96) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-top{
+  padding:32px 36px 28px;
+  border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:flex-start;gap:20px;
+  position:sticky;top:0;background:var(--bg2);z-index:2;
+}
+.modal-top-left{}
+.modal-eyebrow{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:8px;
+}
+.modal-name{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(22px,3vw,32px);color:var(--text);font-weight:700;
+}
+.modal-x{
+  background:none;border:1px solid var(--border2);color:var(--muted);
+  width:36px;height:36px;border-radius:2px;cursor:none;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  font-size:18px;transition:all 0.2s;
+}
+.modal-x:hover{color:var(--text);border-color:var(--border2);background:var(--surface)}
+.modal-body-inner{padding:32px 36px}
+.modal-preview{
+  width:100%;aspect-ratio:16/9;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:3px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:28px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--muted);letter-spacing:0.06em;
+}
+.modal-desc{font-size:14px;color:var(--muted2);line-height:1.85;margin-bottom:24px}
+.modal-tags{display:flex;gap:8px;flex-wrap:wrap}
+.modal-tag{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:0.08em;color:var(--gold);
+  border:1px solid rgba(212,168,83,0.25);
+  padding:5px 12px;border-radius:2px;
+}
+
+/* FOOTER */
+footer{
+  padding:40px clamp(24px,8vw,140px);
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:16px;
+}
+.footer-name{
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:18px;color:var(--muted);
+}
+.footer-mono{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:0.12em;color:var(--muted);
+}
+
+/* REVEAL ANIMATIONS */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity 0.7s ease,transform 0.7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@keyframes slideUp{to{opacity:1;transform:translateY(0)}}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .projects-grid{grid-template-columns:1fr}
+  .acad-grid{grid-template-columns:1fr}
+  .acad-filters{flex-direction:row;flex-wrap:wrap;gap:6px;position:static}
+  .contact-layout{grid-template-columns:1fr}
+  .hero{padding-top:80px}
+  nav{padding:0 24px}
+}
+@media(max-width:600px){
+  .nav-links .nav-link:not(.nav-cta){display:none}
+  .modal-top{padding:24px}
+  .modal-body-inner{padding:24px}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<canvas id="bg-canvas"></canvas>
+<div class="noise"></div>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-name">Pranavan Tharmapalu</div>
+  <div class="loader-bar-track"><div class="loader-bar"></div></div>
+  <div class="loader-pct" id="loaderPct">Loading...</div>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-logo"><span>PT</span> &nbsp;·&nbsp; Portfolio</div>
+  <div class="nav-links">
+    <button class="nav-link" onclick="scrollTo('#work')">Work</button>
+    <button class="nav-link" onclick="scrollTo('#academic')">Research</button>
+    <a class="nav-link nav-cta" href="#contact">Get in touch</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-inner">
+    <div class="hero-tag">Honours Physics · University of Waterloo · KIT Karlsruhe</div>
+    <h1 class="hero-headline">
+      <span class="line"><span class="word">Research.</span></span>
+      <span class="line"><span class="word">Systems.</span></span>
+      <span class="line"><span class="word"><em>Design.</em></span></span>
+    </h1>
+    <p class="hero-sub">
+      I'm a <strong>Honours Physics student</strong> building at the intersection of science, automation, and design. I use AI as a diagnostic tool — to engineer precise solutions, not replace thinking.
+    </p>
+    <div class="hero-actions">
+      <a class="btn-primary" href="#work">
+        View my work
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="#0a0a0a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a class="btn-ghost" href="#contact">Let's connect</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    Scroll to explore
+  </div>
+</section>
+
+<!-- VIDEO -->
+<section class="video-section" id="intro" style="padding-top:0;padding-bottom:clamp(80px,10vw,140px);">
+  <div style="padding:0 clamp(24px,8vw,140px);">
+    <div class="section-label reveal">Introduction</div>
+    <div class="section-title reveal" style="margin-bottom:40px">
+      Watch the <em>90-second</em><br/>intro
+    </div>
+    <div class="video-wrap reveal">
+      <div class="video-overlay" id="videoOverlay" onclick="loadVideo()">
+        <div class="play-btn">
+          <svg viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>
+        </div>
+        <div class="video-label">Who I am &amp; how I can help your team</div>
+      </div>
+      <video class="video-frame" id="videoEl" style="display:none" controls></video>
+      <div style="width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,var(--surface) 0%,var(--bg2) 100%);display:flex;align-items:center;justify-content:center;" id="videoThumb">
+        <div style="text-align:center">
+          <div style="font-family:'Playfair Display',serif;font-size:clamp(18px,3vw,28px);font-style:italic;color:var(--muted);margin-bottom:8px">Pranavan Tharmapalu</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.08em">1:50 · Physics & AI · Waterloo</div>
+        </div>
+      </div>
+      <div class="video-meta">
+        <span class="video-meta-label">90-sec intro · who I am &amp; how I can help your team</span>
+        <span class="video-meta-tag">1:50</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="work">
+  <div class="section-label reveal">Selected Work</div>
+  <div class="section-title reveal">Software I've <em>built</em></div>
+  <div class="projects-grid reveal">
+
+    <div class="proj-card" onclick="openModal('vv-ad')" onmousemove="trackMouse(event,this)">
+      <div class="proj-num">01 / 04</div>
+      <div class="proj-name">VV Ad Vision Drop</div>
+      <div class="proj-desc">Upload a brand cue, answer prompts, receive on-brand ad images you can ship in minutes. Single pipeline from brief to creative.</div>
+      <div class="proj-tags">
+        <span class="proj-tag">1-photo → ad</span>
+        <span class="proj-tag">No-code</span>
+        <span class="proj-tag">AI Creative</span>
+      </div>
+      <div class="proj-arrow">↗</div>
+    </div>
+
+    <div class="proj-card" onclick="openModal('vv-growth')" onmousemove="trackMouse(event,this)">
+      <div class="proj-num">02 / 04</div>
+      <div class="proj-name">VV Growth Ad Engine</div>
+      <div class="proj-desc">Connects to Meta and Google campaigns. Classifies every campaign as STRONG, WEAK, BLEEDING, or DEAD. Delivers your biggest budget leak every Monday morning.</div>
+      <div class="proj-tags">
+        <span class="proj-tag">Funnel health</span>
+        <span class="proj-tag">Ad Intelligence</span>
+        <span class="proj-tag">Weekly digest</span>
+      </div>
+      <div class="proj-arrow">↗</div>
+    </div>
+
+    <div class="proj-card" onclick="openModal('aaos')" onmousemove="trackMouse(event,this)">
+      <div class="proj-num">03 / 04</div>
+      <div class="proj-name">AAOS — Academic OS</div>
+      <div class="proj-desc">Notes → knowledge → spaced repetition. Flashcards auto-built from your own material. Adaptive quiz mode. Less busywork, more real learning.</div>
+      <div class="proj-tags">
+        <span class="proj-tag">EdTech</span>
+        <span class="proj-tag">Spaced repetition</span>
+        <span class="proj-tag">Auto flashcards</span>
+      </div>
+      <div class="proj-arrow">↗</div>
+    </div>
+
+    <div class="proj-card" onclick="openModal('cc')" onmousemove="trackMouse(event,this)">
+      <div class="proj-num">04 / 04</div>
+      <div class="proj-name">CC System — Industrial PDF Reader</div>
+      <div class="proj-desc">Spec OCR → structured CSV in 1 click. Built for manufacturing environments where critical data is trapped in legacy scanned documents.</div>
+      <div class="proj-tags">
+        <span class="proj-tag">OCR</span>
+        <span class="proj-tag">CSV export</span>
+        <span class="proj-tag">Automation</span>
+      </div>
+      <div class="proj-arrow">↗</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ACADEMIC -->
+<section id="academic">
+  <div class="section-label reveal">Academic Work</div>
+  <div class="section-title reveal">Research &amp; <em>lab reports</em></div>
+  <div class="acad-grid reveal">
+    <div class="acad-filters" id="acadFilters">
+      <button class="acad-filter active" onclick="filterAcad('all',this)">All courses</button>
+      <button class="acad-filter" onclick="filterAcad('PHYS124',this)">PHYS 124</button>
+      <button class="acad-filter" onclick="filterAcad('PHYS249',this)">PHYS 249</button>
+      <button class="acad-filter" onclick="filterAcad('PHYS260A',this)">PHYS 260A</button>
+      <button class="acad-filter" onclick="filterAcad('CHEM120L',this)">CHEM 120L</button>
+    </div>
+    <div class="acad-list" id="acadList">
+      <div class="acad-item" data-course="PHYS124" onclick="openAcad('PHYS 124: Modern Physics – Relativity, QM &amp; Nuclear Physics','A comprehensive 8-page competency report covering Special Relativity (Lorentz transformations, spacetime diagrams, four-vectors), Quantum Mechanics (wavefunctions, de Broglie, photoelectric effect), Condensed Matter (band structures, Fermi energy), Nuclear Physics (binding energies, decay), and Particle Physics (Standard Model conservation laws). Includes derivations, graphs, and real-world applications from GPS satellites to particle accelerators.','PHYS 124 · University of Waterloo · Winter 2025 · 8 pages')">
+        <div class="acad-idx">01</div>
+        <div>
+          <div class="acad-name">PHYS 124: Modern Physics – Relativity, QM &amp; Nuclear</div>
+          <div class="acad-sub">PHYS 124 &nbsp;·&nbsp; Winter 2025 &nbsp;·&nbsp; 8 pages</div>
+        </div>
+        <div class="acad-icon"><svg fill="none" viewBox="0 0 14 14" stroke="currentColor" stroke-width="1.2"><path d="M2 2h7l3 3v7H2V2z"/><path d="M9 2v3h3"/></svg></div>
+      </div>
+      <div class="acad-item" data-course="PHYS249" onclick="openAcad('PHYS 249: Computational Physics &amp; Numerical Methods','An intensive computational physics report covering Python scientific computing (NumPy, SciPy, Matplotlib), ODE/PDE solvers (Euler, RK4, Crank-Nicolson), Monte Carlo methods (Ising model, random walks, importance sampling), floating-point precision, Richardson extrapolation, and CFL stability analysis. Capstone projects include chaotic Lorenz systems, 2D heat diffusion, and percolation thresholds.','PHYS 249 · University of Waterloo · Fall 2025 · 10 pages')">
+        <div class="acad-idx">02</div>
+        <div>
+          <div class="acad-name">PHYS 249: Computational Physics &amp; Numerical Methods</div>
+          <div class="acad-sub">PHYS 249 &nbsp;·&nbsp; Fall 2025 &nbsp;·&nbsp; 10 pages</div>
+        </div>
+        <div class="acad-icon"><svg fill="none" viewBox="0 0 14 14" stroke="currentColor" stroke-width="1.2"><path d="M2 2h7l3 3v7H2V2z"/><path d="M9 2v3h3"/></svg></div>
+      </div>
+      <div class="acad-item" data-course="PHYS260A" onclick="openAcad('PHYS 260A: Prism Spectrometer Calibration Lab','Full lab report for Experiment 1-1: calibrating a prism spectrometer using mercury lamp spectral lines. Covers optical alignment, Vernier angle measurements to ±0.001°, apex angle calculations across 3 trials, calibration curve of refractive index vs. wavelength (R²=0.96), and error analysis. Includes hand-drawn apparatus diagrams and Python-generated data tables.','PHYS 260A · University of Waterloo · Winter 2025 · 11 pages')">
+        <div class="acad-idx">03</div>
+        <div>
+          <div class="acad-name">PHYS 260A: Prism Spectrometer Calibration Lab</div>
+          <div class="acad-sub">PHYS 260A &nbsp;·&nbsp; Winter 2025 &nbsp;·&nbsp; 11 pages</div>
+        </div>
+        <div class="acad-icon"><svg fill="none" viewBox="0 0 14 14" stroke="currentColor" stroke-width="1.2"><path d="M2 2h7l3 3v7H2V2z"/><path d="M9 2v3h3"/></svg></div>
+      </div>
+      <div class="acad-item" data-course="CHEM120L" onclick="openAcad('CHEM 120L: Applied Laboratory Competencies in General Chemistry','Lab competency report across 5 experiments: copper reaction cycling (vacuum filtration, thermal decomposition), organic isomerization via reflux (maleic/fumaric acid synthesis), acid-base titration with &lt;1% error margins, ion-exchange chromatography for copper quantification, and flame emission spectroscopy (Balmer/Lyman/Paschen series). Skills directly mapped to pharmaceutical, biotech, and analytical chemistry contexts.','CHEM 120L · University of Waterloo · December 2024 · 8 pages')">
+        <div class="acad-idx">04</div>
+        <div>
+          <div class="acad-name">CHEM 120L: Applied Lab Competencies in General Chemistry</div>
+          <div class="acad-sub">CHEM 120L &nbsp;·&nbsp; December 2024 &nbsp;·&nbsp; 8 pages</div>
+        </div>
+        <div class="acad-icon"><svg fill="none" viewBox="0 0 14 14" stroke="currentColor" stroke-width="1.2"><path d="M2 2h7l3 3v7H2V2z"/><path d="M9 2v3h3"/></svg></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-label reveal">Get In Touch</div>
+  <div class="contact-layout reveal">
+    <div class="contact-copy">
+      <h3>Let's build<br/>something<br/><em>together.</em></h3>
+      <p>Open to research collaborations, internship opportunities, and conversations with people doing interesting work. Calls and email get the fastest response.</p>
+      <div class="contact-avail">
+        <div class="avail-dot"></div>
+        Available · May 2026 onwards
+      </div>
+    </div>
+    <div class="contact-links">
+      <a class="contact-link" href="tel:4379224480">
+        <div class="c-label">
+          <svg class="c-icon" fill="none" viewBox="0 0 18 18" stroke="#666" stroke-width="1.2"><path d="M3.5 1.5h4l1.5 4-2 1.5c.9 2 2.5 3.6 4.5 4.5l1.5-2 4 1.5v4c0 .9-.9 1.5-2 1.5C7 16.5 1.5 11 1.5 4.5c0-1.7.6-3 2-3z"/></svg>
+          Phone
+        </div>
+        <div class="c-val">437 922 4480</div>
+      </a>
+      <a class="contact-link" href="mailto:pranavantharma4@gmail.com">
+        <div class="c-label">
+          <svg class="c-icon" fill="none" viewBox="0 0 18 18" stroke="#666" stroke-width="1.2"><rect x="1.5" y="3.5" width="15" height="11" rx="1.5"/><path d="M1.5 5.5l7.5 5 7.5-5"/></svg>
+          Email
+        </div>
+        <div class="c-val">pranavantharma4@gmail.com</div>
+      </a>
+      <a class="contact-link" href="https://instagram.com/prannyt" target="_blank">
+        <div class="c-label">
+          <svg class="c-icon" fill="none" viewBox="0 0 18 18" stroke="#666" stroke-width="1.2"><rect x="2" y="2" width="14" height="14" rx="4"/><circle cx="9" cy="9" r="3"/><circle cx="13" cy="5" r="0.5" fill="#666"/></svg>
+          Instagram
+        </div>
+        <div class="c-val">@prannyt</div>
+      </a>
+      <a class="contact-link" href="https://youtube.com/@prannyt" target="_blank">
+        <div class="c-label">
+          <svg class="c-icon" fill="none" viewBox="0 0 18 18" stroke="#666" stroke-width="1.2"><rect x="1.5" y="4.5" width="15" height="9" rx="2.5"/><path d="M7.5 7.5l4 2-4 2V7.5z" fill="#666" stroke="none"/></svg>
+          YouTube
+        </div>
+        <div class="c-val">@prannyt</div>
+      </a>
+      <a class="contact-link" href="https://tiktok.com/@prannyt" target="_blank">
+        <div class="c-label">
+          <svg class="c-icon" fill="none" viewBox="0 0 18 18" stroke="#666" stroke-width="1.2"><path d="M13 2v9.5a4.5 4.5 0 1 1-4.5-4.5V10a1 1 0 1 0 1 1V2h3.5z" stroke-linejoin="round"/></svg>
+          TikTok
+        </div>
+        <div class="c-val">prannyt</div>
+      </a>
+      <a class="contact-link" href="https://twitter.com/pranavantharma4" target="_blank">
+        <div class="c-label">
+          <svg class="c-icon" fill="none" viewBox="0 0 18 18" stroke="#666" stroke-width="1.2"><path d="M2 2l6.5 7L2 16h2l5-5.5 4 5.5h4l-7-9.5L16 2h-2l-4.5 5.5L6 2H2z" stroke-linejoin="round"/></svg>
+          X (Twitter)
+        </div>
+        <div class="c-val">@pranavantharma4</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="footer-name">Pranavan Tharmapalu</div>
+  <div class="footer-mono">Honours Physics · Waterloo, ON → Karlsruhe, DE &nbsp;·&nbsp; © 2026</div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="maybeClose(event)">
+  <div class="modal">
+    <div class="modal-top">
+      <div class="modal-top-left">
+        <div class="modal-eyebrow" id="modal-eyebrow">Project</div>
+        <div class="modal-name" id="modal-name">Title</div>
+      </div>
+      <button class="modal-x" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body-inner">
+      <div class="modal-preview" id="modal-preview">[ Screenshot / live demo ]</div>
+      <p class="modal-desc" id="modal-desc"></p>
+      <div class="modal-tags" id="modal-tags"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* CURSOR */
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  cur.style.left=mx+'px';cur.style.top=my+'px';
+});
+function animRing(){
+  rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;
+  ring.style.left=rx+'px';ring.style.top=ry+'px';
+  requestAnimationFrame(animRing);
+}
+animRing();
+document.querySelectorAll('a,button,[onclick]').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.classList.add('hovering');ring.classList.add('hovering')});
+  el.addEventListener('mouseleave',()=>{cur.classList.remove('hovering');ring.classList.remove('hovering')});
+});
+
+/* CANVAS PARTICLE FIELD */
+(function(){
+  const c=document.getElementById('bg-canvas');
+  const ctx=c.getContext('2d');
+  let W,H,pts=[];
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight}
+  resize();window.addEventListener('resize',()=>{resize();init()});
+  function init(){
+    pts=[];
+    const n=Math.floor((W*H)/18000);
+    for(let i=0;i<n;i++) pts.push({
+      x:Math.random()*W,y:Math.random()*H,
+      vx:(Math.random()-0.5)*0.18,vy:(Math.random()-0.5)*0.18,
+      r:Math.random()*1.2+0.3
+    });
+  }
+  init();
+  let frame=0;
+  function draw(){
+    frame++;
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=W;if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle='rgba(212,168,83,0.35)';
+      ctx.fill();
+    });
+    // connections
+    for(let i=0;i<pts.length;i++){
+      for(let j=i+1;j<pts.length;j++){
+        const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<120){
+          ctx.beginPath();
+          ctx.moveTo(pts[i].x,pts[i].y);
+          ctx.lineTo(pts[j].x,pts[j].y);
+          ctx.strokeStyle=`rgba(212,168,83,${0.06*(1-d/120)})`;
+          ctx.lineWidth=0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* LOADER */
+setTimeout(()=>{
+  const l=document.getElementById('loader');
+  const pct=document.getElementById('loaderPct');
+  let p=0;
+  const iv=setInterval(()=>{
+    p+=Math.random()*15+5;
+    if(p>=100){p=100;clearInterval(iv);setTimeout(()=>l.classList.add('gone'),300)}
+    pct.textContent=Math.min(Math.floor(p),100)+'%';
+  },80);
+},200);
+
+/* NAV SCROLL */
+window.addEventListener('scroll',()=>{
+  document.getElementById('nav').classList.toggle('scrolled',window.scrollY>40);
+});
+
+/* SCROLL REVEAL */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')});
+},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+/* SMOOTH SCROLL */
+function scrollTo(hash){document.querySelector(hash)?.scrollIntoView({behavior:'smooth'})}
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const h=a.getAttribute('href');
+    if(h.length>1){e.preventDefault();scrollTo(h);}
+  });
+});
+
+/* MOUSE GLOW ON CARDS */
+function trackMouse(e,el){
+  const r=el.getBoundingClientRect();
+  el.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');
+  el.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%');
+}
+
+/* PROJECTS */
+const projects={
+  'vv-ad':{
+    eyebrow:'Vanguard Visuals · Ad Intelligence',
+    name:'VV Ad Vision Drop',
+    desc:'An invitation-only AI platform that transforms a single brand cue into production-ready ad images within minutes. The system answers targeted prompts about your brand voice, audience, and visual identity — then generates a set of on-brand creatives you can ship immediately. Built for performance marketers who cannot wait on agency turnaround times.',
+    tags:['1-photo → ad in minutes','No-code pipeline','Brand-aware AI','Meta & Google ready','Invitation only']
+  },
+  'vv-growth':{
+    eyebrow:'Vanguard Visuals · Campaign Intelligence',
+    name:'VV Growth Ad Engine',
+    desc:'Connects directly to your Meta and Google Ads accounts. Classifies every running campaign as STRONG, WEAK, BLEEDING, or DEAD using spend efficiency signals. Every Monday morning you receive a single plain-English report identifying your biggest budget leak — no dashboards to interpret, no agency jargon.',
+    tags:['Funnel health live','Creative gen baked-in','Meta + Google API','Weekly digest','Budget leak detection']
+  },
+  'aaos':{
+    eyebrow:'Personal EdTech · Spaced Repetition',
+    name:'AAOS — Academic OS',
+    desc:'A study system that converts raw notes into structured knowledge and auto-generates spaced repetition flashcards from your own source material. Quiz mode adapts difficulty based on your retention patterns. Built out of personal frustration with passive re-reading as a study strategy.',
+    tags:['Flashcards auto-built','Adaptive quiz mode','Spaced repetition','Notes → knowledge','EdTech']
+  },
+  'cc':{
+    eyebrow:'Automation · Industrial Context',
+    name:'CC System — Industrial PDF Reader',
+    desc:'Extracts structured data from industrial spec sheets and legacy PDF documents using a custom OCR pipeline. Outputs clean, queryable CSV files in a single click. Built for manufacturing environments where critical spec data is trapped in scanned documents from decades past.',
+    tags:['OCR + structure','Export to CSV','Industrial spec sheets','Batch processing','Document automation']
+  }
+};
+
+function openModal(id){
+  const p=projects[id];if(!p)return;
+  document.getElementById('modal-eyebrow').textContent=p.eyebrow;
+  document.getElementById('modal-name').textContent=p.name;
+  document.getElementById('modal-desc').textContent=p.desc;
+  document.getElementById('modal-tags').innerHTML=p.tags.map(t=>`<span class="modal-tag">${t}</span>`).join('');
+  document.getElementById('modal-preview').textContent='[ Screenshot / live demo — add your URL here ]';
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function openAcad(name,desc,sub){
+  document.getElementById('modal-eyebrow').textContent=sub;
+  document.getElementById('modal-name').textContent=name;
+  document.getElementById('modal-desc').textContent=desc;
+  document.getElementById('modal-tags').innerHTML='';
+  document.getElementById('modal-preview').textContent='[ PDF embedded here — link your document ]';
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow='';
+}
+function maybeClose(e){if(e.target===document.getElementById('modal'))closeModal()}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+/* ACADEMIC FILTER */
+function filterAcad(course,btn){
+  document.querySelectorAll('.acad-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.acad-item').forEach(item=>{
+    item.style.display=(course==='all'||item.dataset.course===course)?'grid':'none';
+  });
+}
+
+/* VIDEO */
+function loadVideo(){
+  const overlay=document.getElementById('videoOverlay');
+  const thumb=document.getElementById('videoThumb');
+  // Replace the src below with your actual YouTube embed URL
+  const iframe=document.createElement('iframe');
+  iframe.src='https://www.youtube.com/embed/?autoplay=1&rel=0';
+  iframe.className='video-frame';
+  iframe.allow='autoplay; encrypted-media';
+  iframe.allowFullscreen=true;
+  overlay.style.display='none';
+  thumb.style.display='none';
+  overlay.parentNode.insertBefore(iframe,overlay);
+}
+</script>
+</body>
+</html>
